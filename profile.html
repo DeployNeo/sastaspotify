@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Musico — Profile</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <style>
+    body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#0a0a0b;color:#f1f5f9}
+    .container{max-width:980px;margin:0 auto;padding:24px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .btn{appearance:none;border:none;background:#1a1a1f;color:#fff;padding:12px 14px;border-radius:12px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+    .btn.primary{background:linear-gradient(135deg,#6366f1,#06b6d4)}
+    .card{background:linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;margin-top:16px}
+    .row{display:flex;gap:16px;align-items:center}
+    .badge{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);font-size:12px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:12px}
+    .banner{height:160px;border-radius:16px;background:linear-gradient(90deg,rgba(99,102,241,.35),rgba(6,182,212,.35));overflow:hidden;display:flex;align-items:flex-end}
+    .banner img{width:100%;height:100%;object-fit:cover;display:block}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i> Back</button>
+        <div style="font-weight:800;font-size:20px">Your Profile</div>
+      </div>
+      <div>
+        <button id="btnSignIn" class="btn" style="display:none"><i class="fab fa-google"></i> Sign in</button>
+        <button id="btnSignOut" class="btn" style="display:none"><i class="fas fa-right-from-bracket"></i> Sign out</button>
+      </div>
+    </div>
+
+    <div class="card banner" id="bannerWrap">
+      <img id="bannerImg" src="" alt="Banner" style="display:none" />
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <img id="photo" src="" style="width:88px;height:88px;border-radius:16px;object-fit:cover;border:1px solid rgba(255,255,255,.2)" />
+        <div>
+          <div id="name" style="font-size:22px;font-weight:800">Guest</div>
+          <div id="email" style="color:#9ca3af">Not signed in</div>
+          <div style="margin-top:8px;display:flex;gap:8px">
+            <span id="statLiked" class="badge">0 liked</span>
+            <span id="statRecent" class="badge">0 recent</span>
+            <span id="statPlaylists" class="badge">0 playlists</span>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px;align-items:flex-end">
+        <div style="flex:1">
+          <div style="font-weight:700;margin-bottom:6px">Edit profile</div>
+          <div class="row">
+            <input id="displayNameInput" placeholder="Display name" style="flex:1;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);color:#fff;padding:10px 12px;border-radius:12px;outline:none" />
+            <input id="photoUrlInput" placeholder="Photo URL" style="flex:1;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);color:#fff;padding:10px 12px;border-radius:12px;outline:none" />
+            <input id="bannerUrlInput" placeholder="Banner URL" style="flex:1;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);color:#fff;padding:10px 12px;border-radius:12px;outline:none" />
+          </div>
+          <div class="row" style="margin-top:8px">
+            <label for="photoFile" class="btn" style="flex:1;justify-content:flex-start;gap:10px"><i class="fas fa-image"></i> Choose Profile Photo</label>
+            <input id="photoFile" type="file" accept="image/*" style="display:none" />
+            <button id="uploadPhotoBtn" class="btn"><i class="fas fa-upload"></i> Upload Photo</button>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <label for="bannerFile" class="btn" style="flex:1;justify-content:flex-start;gap:10px"><i class="fas fa-image"></i> Choose Banner Image</label>
+            <input id="bannerFile" type="file" accept="image/*" style="display:none" />
+            <button id="uploadBannerBtn" class="btn"><i class="fas fa-upload"></i> Upload Banner</button>
+          </div>
+        </div>
+        <button id="saveProfile" class="btn primary"><i class="fas fa-save"></i> Save</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:8px"><i class="fas fa-heart"></i> Liked</div>
+      <div id="liked" class="grid"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:8px"><i class="fas fa-clock"></i> Recent</div>
+      <div id="recent" class="grid"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:8px"><i class="fas fa-list"></i> Playlists</div>
+      <div class="row" style="margin-bottom:8px">
+        <input id="plistName" placeholder="New playlist name" style="flex:1;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);color:#fff;padding:10px 12px;border-radius:12px;outline:none" />
+        <button id="createPlist" class="btn"><i class="fas fa-plus"></i> Create</button>
+      </div>
+      <div id="playlists" class="grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+      projectId: "YOUR_FIREBASE_PROJECT_ID",
+      storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_FIREBASE_SENDER_ID",
+      appId: "YOUR_FIREBASE_APP_ID"
+    };
+    let app, auth, db, storage, user;
+    try{
+      app = (firebase.apps && firebase.apps.length) ? firebase.app() : firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+      db = firebase.firestore();
+      storage = firebase.storage();
+      if (auth && auth.setPersistence) {
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+      }
+    }catch(e){ console.warn('Firebase init failed', e); }
+
+    const $ = id => document.getElementById(id);
+    const photo = $('photo');
+    const name = $('name');
+    const email = $('email');
+    const statLiked = $('statLiked');
+    const statRecent = $('statRecent');
+    const statPlaylists = $('statPlaylists');
+    const liked = $('liked');
+    const recent = $('recent');
+    const playlists = $('playlists');
+
+    function renderVideoGrid(container, items){
+      container.innerHTML = '';
+      items.forEach(v => {
+        const card = document.createElement('div');
+        card.style.background = 'linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04))';
+        card.style.border = '1px solid rgba(255,255,255,.1)';
+        card.style.borderRadius = '16px';
+        card.innerHTML = `<img src="${v.thumbnail}" style="width:100%;height:160px;object-fit:cover;border-top-left-radius:16px;border-top-right-radius:16px" /><div style="padding:12px"><div style="font-weight:700">${v.title}</div><div style="color:#9ca3af">${v.channel}</div></div>`;
+        card.onclick = ()=> window.location.href = 'index.html';
+        container.appendChild(card);
+      });
+    }
+
+    const LS_KEY = (uid)=> `musico-profile-${uid}`;
+
+    async function load(){
+      if(!auth){
+        // No Firebase available; show guest and sign-in CTA
+        $('btnSignIn').style.display = '';
+        $('btnSignOut').style.display = 'none';
+        return;
+      }
+      auth.onAuthStateChanged(async (u)=>{
+        user = u;
+        if(!user){
+          // Guest view (no redirect) with sign-in CTA
+          $('btnSignIn').style.display = '';
+          $('btnSignOut').style.display = 'none';
+          const avatar = 'https://ui-avatars.com/api/?background=0B0B0C&color=fff&name=Guest';
+          photo.src = avatar;
+          name.textContent = 'Guest';
+          email.textContent = 'Not signed in';
+          $('displayNameInput').value = '';
+          $('photoUrlInput').value = '';
+          $('bannerUrlInput').value = '';
+          $('bannerImg').style.display = 'none';
+          statLiked.textContent = '0 liked';
+          statRecent.textContent = '0 recent';
+          statPlaylists.textContent = '0 playlists';
+          liked.innerHTML = '';
+          recent.innerHTML = '';
+          playlists.innerHTML = '';
+          return;
+        }
+
+        // Signed-in view
+        $('btnSignIn').style.display = 'none';
+        $('btnSignOut').style.display = '';
+        const p = user.photoURL || 'https://ui-avatars.com/api/?background=0B0B0C&color=fff&name=' + encodeURIComponent(user.displayName || user.email || 'User');
+        photo.src = p;
+        name.textContent = user.displayName || (user.email||'').split('@')[0] || 'User';
+        email.textContent = user.email || '—';
+        $('displayNameInput').value = user.displayName || '';
+        $('photoUrlInput').value = user.photoURL || '';
+        const profDoc = await db.collection('users').doc(user.uid).get();
+        const cached = JSON.parse(localStorage.getItem(LS_KEY(user.uid) ) || '{}');
+        const banner = profDoc.exists ? (profDoc.data().bannerUrl || cached.bannerUrl || '') : (cached.bannerUrl || '');
+        $('bannerUrlInput').value = banner || '';
+        const bannerImg = $('bannerImg');
+        if (banner) { bannerImg.src = banner; bannerImg.style.display = 'block'; } else { bannerImg.style.display = 'none'; }
+
+        const likesSnap = await db.collection('users').doc(user.uid).collection('likes').orderBy('likedAt','desc').get();
+        const recentsSnap = await db.collection('users').doc(user.uid).collection('recents').orderBy('playedAt','desc').get();
+        const plistSnap = await db.collection('users').doc(user.uid).collection('playlists').orderBy('createdAt','desc').get();
+        statLiked.textContent = `${likesSnap.size} liked`;
+        statRecent.textContent = `${recentsSnap.size} recent`;
+        statPlaylists.textContent = `${plistSnap.size} playlists`;
+        renderVideoGrid(liked, likesSnap.docs.map(d=>d.data()));
+        renderVideoGrid(recent, recentsSnap.docs.map(d=>d.data()));
+        playlists.innerHTML = '';
+        plistSnap.docs.forEach(d=>{
+          const pdoc = d.data();
+          const el = document.createElement('div');
+          el.style.background = 'linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04))';
+          el.style.border = '1px solid rgba(255,255,255,.1)';
+          el.style.borderRadius = '16px';
+          el.style.padding = '12px';
+          el.innerHTML = `<div style=\"font-weight:700\">${pdoc.name}</div><div class=\"badge\" style=\"display:inline-block;margin-top:6px\">Playlist</div>`;
+          el.onclick = async ()=>{
+            const tracksSnap = await db.collection('users').doc(user.uid).collection('playlists').doc(d.id).collection('tracks').orderBy('addedAt','desc').get();
+            renderVideoGrid(liked, tracksSnap.docs.map(t=>t.data()));
+            window.scrollTo({top:0,behavior:'smooth'});
+          };
+          playlists.appendChild(el);
+        });
+      });
+    }
+
+    $('createPlist').onclick = async ()=>{
+      const val = $('plistName').value.trim();
+      if(!val || !user) return;
+      await db.collection('users').doc(user.uid).collection('playlists').add({name:val, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+      $('plistName').value = '';
+      load();
+    };
+    $('btnSignIn').onclick = ()=> window.location.href = 'auth.html';
+    $('btnSignOut').onclick = ()=> auth && auth.signOut().then(()=> { /* stay here as guest */ }).catch(()=>{});
+    async function uploadImage(file, path){
+      if(!storage || !user || !file) return null;
+      const ref = storage.ref().child(path);
+      await ref.put(file);
+      return await ref.getDownloadURL();
+    }
+
+    $('uploadPhotoBtn').onclick = async ()=>{
+      if(!user) { window.location.href='auth.html'; return; }
+      const file = $('photoFile').files[0];
+      if(!file) return;
+      const url = await uploadImage(file, `users/${user.uid}/profilePhoto_${Date.now()}.jpg`);
+      if(url){
+        $('photoUrlInput').value = url;
+        $('photo').src = url;
+        const cached = JSON.parse(localStorage.getItem(LS_KEY(user.uid)) || '{}');
+        localStorage.setItem(LS_KEY(user.uid), JSON.stringify({ ...cached, photoURL: url }));
+      }
+    };
+
+    $('uploadBannerBtn').onclick = async ()=>{
+      if(!user) { window.location.href='auth.html'; return; }
+      const file = $('bannerFile').files[0];
+      if(!file) return;
+      const url = await uploadImage(file, `users/${user.uid}/banner_${Date.now()}.jpg`);
+      if(url){
+        $('bannerUrlInput').value = url;
+        const bannerImg = $('bannerImg'); bannerImg.src = url; bannerImg.style.display='block';
+        const cached = JSON.parse(localStorage.getItem(LS_KEY(user.uid)) || '{}');
+        localStorage.setItem(LS_KEY(user.uid), JSON.stringify({ ...cached, bannerUrl: url }));
+      }
+    };
+
+    $('saveProfile').onclick = async ()=>{
+      if(!user) return;
+      const displayName = $('displayNameInput').value.trim();
+      const photoURL = $('photoUrlInput').value.trim();
+      const bannerUrl = $('bannerUrlInput').value.trim();
+      try{
+        await user.updateProfile({ displayName: displayName || null, photoURL: photoURL || null });
+      }catch(e){ console.warn('Auth profile update failed', e); }
+      await db.collection('users').doc(user.uid).set({
+        displayName: displayName || null,
+        photoURL: photoURL || null,
+        bannerUrl: bannerUrl || null,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      try{
+        const cached = JSON.parse(localStorage.getItem(LS_KEY(user.uid)) || '{}');
+        localStorage.setItem(LS_KEY(user.uid), JSON.stringify({ ...cached, displayName, photoURL, bannerUrl }));
+      }catch(_){}
+      load();
+    };
+    load();
+  </script>
+</body>
+</html>
+
+
